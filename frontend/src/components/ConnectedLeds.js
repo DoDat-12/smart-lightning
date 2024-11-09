@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ref, onValue, set } from 'firebase/database';
 import { Card, CardContent, Typography, Box, Button, Stack } from '@mui/material';
-import { db } from '../config/firebaseConfig';
+import { db } from '../firebaseConfig';
 import { getAuth } from 'firebase/auth';
 
 const ConnectedLeds = () => {
