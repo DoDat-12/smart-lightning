@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { auth } from '../config/firebaseConfig';
+import { auth } from '../firebaseConfig';
 import { Typography, Stack, Avatar, Menu, MenuItem } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AvailableLeds from '../components/AvailableLeds';
