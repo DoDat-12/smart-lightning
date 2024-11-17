@@ -1,72 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { ref, onValue, set } from 'firebase/database';
-import { Button, Card, CardContent, Typography, Grid2 } from '@mui/material';
+import { Button, Card, CardContent, Typography, Grid } from '@mui/material';
 import { db } from '../firebaseConfig';
 import { getAuth } from 'firebase/auth';
 
-const AvailableLed = () => {
-    const [leds, setLeds] = useState(null);
+const AvailableLeds = ({ groupId }) => {
+    const [leds, setLeds] = useState([]);
+    const user = getAuth().currentUser;
 
     useEffect(() => {
-        const ledsRef = ref(db, '/');
-        onValue(ledsRef, (snapshot) => {
-            const data = snapshot.val();
-            setLeds(data);
-        });
-    }, []);
+        if (groupId && user?.uid) {
+            const ledsRef = ref(db, 'leds');
+            onValue(ledsRef, (snapshot) => {
+                const data = snapshot.val();
+                const filteredLeds = Object.keys(data)
+                    .filter((ledId) => data[ledId].group_id === 0 && data[ledId].user === user?.uid) // Only show user's LEDs with group_id = 0
+                    .map((ledId) => ({ id: ledId, ...data[ledId] }));
+                setLeds(filteredLeds);
+            });
+        }
+    }, [groupId, user?.uid]);
 
     const connectLed = (ledId) => {
-        const user = getAuth().currentUser;
         if (user) {
-            const userId = user.uid;  // user UID
-            console.log(`Connecting to ${ledId} as user ${userId}`);
-
-            const ledRef = ref(db, `${ledId}`);
+            // const userId = user.uid;
+            const ledRef = ref(db, `leds/${ledId}`);
             set(ledRef, {
-                ...leds[ledId],
-                user: userId
+                ...leds.find((led) => led.id === ledId),
+                group_id: Number(groupId),
             });
-        } else {
-            console.log("No user logged in");
         }
     };
 
-    if (!leds) {
-        return <div>Loading...</div>;
-    }
-
-    // LED with user === ""
-    const availableLeds = Object.keys(leds).filter((ledId) => leds[ledId].user === "");
-
-    if (availableLeds.length === 0) {
-        return <div>No Led Available</div>;
+    if (leds.length === 0) {
+        return <div>No Available LEDs</div>;
     }
 
     return (
-        <div>
-            <Grid2 container spacing={2}>
-                {availableLeds.map((ledId) => {
-                    // const led = leds[ledId];
-                    return (
-                        <Grid2 item xs={12} sm={6} md={4} lg={3} key={ledId}>
-                            <Card sx={{ height: '100%' }}>
-                                <CardContent>
-                                    <Typography variant="h6">{ledId}</Typography>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={() => connectLed(ledId)}
-                                    >
-                                        Connect
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        </Grid2>
-                    );
-                })}
-            </Grid2>
-        </div>
+        <Grid container spacing={2}>
+            {leds.map((led) => (
+                <Grid item xs={12} sm={6} md={4} key={led.id}>
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h6">{led.id}</Typography>
+                            <Button variant="contained" onClick={() => connectLed(led.id)}>
+                                Connect
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </Grid>
+            ))}
+        </Grid>
     );
 };
 
-export default AvailableLed;
+export default AvailableLeds;
