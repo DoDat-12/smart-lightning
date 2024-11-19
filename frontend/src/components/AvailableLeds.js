@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { ref, onValue, set } from 'firebase/database';
-import { Button, Card, CardContent, Typography, Grid } from '@mui/material';
+import { Button, Card, CardContent, Typography, Grid2, Stack } from '@mui/material';
 import { db } from '../firebaseConfig';
 import { getAuth } from 'firebase/auth';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 
 const AvailableLeds = ({ groupId }) => {
     const [leds, setLeds] = useState([]);
@@ -33,24 +34,30 @@ const AvailableLeds = ({ groupId }) => {
     };
 
     if (leds.length === 0) {
-        return <div>No Available LEDs</div>;
+        return <div><Typography variant='caption'>No Available LEDs</Typography></div>;
     }
 
     return (
-        <Grid container spacing={2}>
+        <Grid2 marginTop={2} container spacing={3} direction={"row"}>
             {leds.map((led) => (
-                <Grid item xs={12} sm={6} md={4} key={led.id}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6">{led.id}</Typography>
-                            <Button variant="contained" onClick={() => connectLed(led.id)}>
+                <Card key={led.id} variant="elevation" style={{ backgroundColor: "#EB8317" }}
+                    sx={{ height: 70, width: 300, borderRadius: 5 }}>
+                    <CardContent>
+                        <Stack direction={"row"} spacing={6} justifyContent={"space-between"} alignItems={"center"}>
+                            <Stack direction={"row"} alignItems={"center"} color={"white"} spacing={1}>
+                                <LightbulbIcon />
+                                <Typography variant="h5" component="div" color='white'>
+                                    {led.name}
+                                </Typography>
+                            </Stack>
+                            <Button variant="text" onClick={() => connectLed(led.id)} color="success">
                                 Connect
                             </Button>
-                        </CardContent>
-                    </Card>
-                </Grid>
+                        </Stack>
+                    </CardContent>
+                </Card>
             ))}
-        </Grid>
+        </Grid2>
     );
 };
 
