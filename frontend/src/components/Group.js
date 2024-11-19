@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Tabs, Tab, IconButton, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Stack, Button } from '@mui/material';
+import { Tabs, Tab, IconButton, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Stack, Button, DialogContentText } from '@mui/material';
 import { ref, onValue, set, get } from 'firebase/database';
 import { db } from '../firebaseConfig';
 import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
@@ -89,26 +89,27 @@ const Group = ({ onGroupChange }) => {
                     <AddBoxOutlinedIcon />
                 </IconButton>
             </Stack>
-            <Dialog open={openDialog} onClose={handleCloseDialog}>
-                <DialogTitle>Thêm Group Mới</DialogTitle>
+            <Dialog
+                open={openDialog}
+                onClose={handleCloseDialog}>
+                <DialogTitle>Add new group</DialogTitle>
                 <DialogContent>
+                    <DialogContentText>
+                        To add new group, please enter your group's name here.
+                    </DialogContentText>
                     <TextField
-                        autoFocus
+                        required
                         margin="dense"
-                        label="Tên Group"
-                        fullWidth
-                        variant="outlined"
+                        label="Group name"
                         value={newGroupName}
+                        fullWidth
+                        variant="standard"
                         onChange={(e) => setNewGroupName(e.target.value)}
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseDialog} color="error" variant="contained">
-                        CANCEL
-                    </Button>
-                    <Button onClick={handleAddGroup} color="success" variant="contained">
-                        OK
-                    </Button>
+                    <Button onClick={handleCloseDialog}>Cancel</Button>
+                    <Button type="submit" onClick={handleAddGroup}>Add group</Button>
                 </DialogActions>
             </Dialog>
         </div>
