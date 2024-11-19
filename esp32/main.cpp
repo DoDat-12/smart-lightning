@@ -23,6 +23,7 @@ const int freq = 5000;
 unsigned long sendDataPrevMillis = 0;
 bool signUp = false;
 bool autoControl = false;
+int threshold = 2000;
 
 // functions
 void connectToWifi();
@@ -81,9 +82,15 @@ void connectToFirebase()
   // Database init - disconnect with all users
   if (Firebase.ready() && signUp && sendDataPrevMillis == 0)
   {
-    if (Firebase.RTDB.setInt(&fbdo, "led01/mode", 0) &&
-        Firebase.RTDB.setInt(&fbdo, "led01/status", 0) &&
-        Firebase.RTDB.setInt(&fbdo, "led01/intensity", 0))
+    if (
+        Firebase.RTDB.setInt(&fbdo, "leds/led01/group_id", 0) &&
+        Firebase.RTDB.setString(&fbdo, "leds/led01/id", "led01") &&
+        Firebase.RTDB.setInt(&fbdo, "leds/led01/intensity", 0) &&
+        Firebase.RTDB.setInt(&fbdo, "leds/led01/mode", 0) &&
+        Firebase.RTDB.setString(&fbdo, "leds/led01/name", "Led 1") &&
+        Firebase.RTDB.setInt(&fbdo, "leds/led01/status", 0) &&
+        Firebase.RTDB.setInt(&fbdo, "leds/led01/threshold", 2000) &&
+        Firebase.RTDB.setString(&fbdo, "leds/led01/user", "1mn36qZN5mdcByqB04JVgmq3mX72"))
       Serial.print("Setup device successfully");
     else
       Serial.print(fbdo.errorReason());
@@ -95,7 +102,8 @@ void configListener()
   if (Firebase.ready() && signUp &&
       (millis() - sendDataPrevMillis > freq || sendDataPrevMillis == 0))
   {
-    if (Firebase.RTDB.getInt(&fbdo, "led01/mode"))
+    // update mode
+    if (Firebase.RTDB.getInt(&fbdo, "leds/led01/mode"))
     {
       int mode = fbdo.intData();
       if (mode == 0)
@@ -116,6 +124,12 @@ void configListener()
         printf("\nled01 mode: AUTO");
       }
     }
+
+    // update threshold
+    if (Firebase.RTDB.getInt(&fbdo, "leds/led01/threshold"))
+    {
+      threshold = fbdo.intData();
+    }
   }
   else
     printf("Firebase disconnected");
@@ -126,7 +140,7 @@ void autoControlling(bool autoControl)
   if (autoControl)
   {
     int intensity = analogRead(LDR);
-    if (intensity > 1000)
+    if (intensity > threshold)
       digitalWrite(LED, HIGH);
     else
       digitalWrite(LED, LOW);
@@ -137,8 +151,8 @@ void sendingData()
 {
   if (Firebase.ready() && signUp &&
       (millis() - sendDataPrevMillis > freq || sendDataPrevMillis == 0) &&
-      Firebase.RTDB.setInt(&fbdo, "led01/intensity", analogRead(LDR)))
+      Firebase.RTDB.setInt(&fbdo, "leds/led01/intensity", analogRead(LDR)))
   {
-    Firebase.RTDB.setInt(&fbdo, "led01/status", digitalRead(LED));
+    Firebase.RTDB.setInt(&fbdo, "leds/led01/status", digitalRead(LED));
   }
 }
