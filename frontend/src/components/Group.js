@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Tabs, Tab, IconButton, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Stack, Button, DialogContentText } from '@mui/material';
+import { Tabs, Tab, IconButton, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Stack, Button, DialogContentText, Tooltip } from '@mui/material';
 import { ref, onValue, set, get } from 'firebase/database';
 import { db } from '../firebaseConfig';
 import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
@@ -82,12 +82,14 @@ const Group = ({ onGroupChange }) => {
                         <Tab key={group.groupId} label={group.groupName} />
                     ))}
                 </Tabs>
-                <IconButton
-                    color="primary"
-                    onClick={handleOpenDialog}
-                >
-                    <AddBoxOutlinedIcon />
-                </IconButton>
+                <Tooltip title="Add new group">
+                    <IconButton
+                        color="primary"
+                        onClick={handleOpenDialog}
+                    >
+                        <AddBoxOutlinedIcon />
+                    </IconButton>
+                </Tooltip>
             </Stack>
             <Dialog
                 open={openDialog}
