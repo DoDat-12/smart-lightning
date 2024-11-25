@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ref, onValue, set, remove } from 'firebase/database';
-import { Card, CardContent, Typography, Stack, Grid2, ToggleButtonGroup, ToggleButton, Box, Button, Slider, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { Card, CardContent, Typography, Stack, Grid2, ToggleButtonGroup, ToggleButton, Box, Button, Slider, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Tooltip } from '@mui/material';
 import { db } from '../firebaseConfig';
 import { getAuth } from 'firebase/auth';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import HelpOutlinedIcon from '@mui/icons-material/HelpOutlined';
 
 const ConnectedLeds = ({ groupId }) => {
     const [leds, setLeds] = useState([]);
@@ -11,6 +12,9 @@ const ConnectedLeds = ({ groupId }) => {
     const [selectedOption, setSelectedOption] = useState('OFF');
     const [threshold, setThreshold] = useState(2000);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+
+    const [healthyCount, setHealthyCount] = useState(0);
+    const [unhealthyCount, setUnhealthyCount] = useState(0);
 
     const handleChange = (event, newOption) => {
         if (newOption !== null) {
@@ -79,12 +83,30 @@ const ConnectedLeds = ({ groupId }) => {
         }
     }, [groupId, user]);
 
+    useEffect(() => {
+        if (leds.length > 0) {
+            const healthy = leds.filter(led => led.mode === led.status).length;
+            const unhealthy = leds.length - healthy;
+
+            setHealthyCount(healthy);
+            setUnhealthyCount(unhealthy);
+        }
+    }, [leds]);
+
     const disconnectLed = (ledId) => {
         const ledRef = ref(db, `leds/${ledId}`);
         set(ledRef, {
             ...leds.find((led) => led.id === ledId),
             group_id: 0,
         });
+    };
+
+    const renderLedList = (leds) => {
+        return leds.map((led) => (
+            <Typography key={led.id} variant="body2">
+                {led.name} (ID: {led.id})
+            </Typography>
+        ));
     };
 
     if (leds.length === 0) {
@@ -126,19 +148,21 @@ const ConnectedLeds = ({ groupId }) => {
     return (
         <Stack spacing={5}>
             <Stack spacing={2}>
-                <Stack direction={"row"} spacing={3} alignItems={"center"}>
-                    <Typography variant="h6">Mode</Typography>
-                    <ToggleButtonGroup value={selectedOption} exclusive onChange={handleChange}>
-                        <ToggleButton value="ON" sx={{ width: 100 }}>
-                            ON
-                        </ToggleButton>
-                        <ToggleButton value="OFF" sx={{ width: 100 }}>
-                            OFF
-                        </ToggleButton>
-                        <ToggleButton value="AUTO" sx={{ width: 100 }}>
-                            AUTO
-                        </ToggleButton>
-                    </ToggleButtonGroup>
+                <Stack spacing={5} direction={"row"} alignItems={"normal"}>
+                    <Stack direction={"row"} spacing={3} alignItems={"center"}>
+                        <Typography variant="h6">Mode</Typography>
+                        <ToggleButtonGroup value={selectedOption} exclusive onChange={handleChange}>
+                            <ToggleButton value="ON" sx={{ width: 100 }}>
+                                ON
+                            </ToggleButton>
+                            <ToggleButton value="OFF" sx={{ width: 100 }}>
+                                OFF
+                            </ToggleButton>
+                            <ToggleButton value="AUTO" sx={{ width: 100 }}>
+                                AUTO
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                    </Stack>
                 </Stack>
                 <Stack direction={"column"} spacing={2}>
                     <Typography variant='h6'>Intensity threshold: {threshold}</Typography>
@@ -153,6 +177,40 @@ const ConnectedLeds = ({ groupId }) => {
                         sx={{ width: 300 }}
                     />
 
+                </Stack>
+                <Stack direction={"row"} spacing={8}>
+                    <Stack direction={"row"} spacing={1}>
+                        <Typography variant="button" color="success.main">
+                            Healthy LEDs: {healthyCount}
+                        </Typography>
+                        <Tooltip
+                            title={
+                                <Box>
+                                    <Typography variant="subtitle1">Healthy LEDs:</Typography>
+                                    {renderLedList(leds.filter((led) => led.mode === led.status))}
+                                </Box>
+                            }
+                            arrow
+                        >
+                            <HelpOutlinedIcon sx={{ color: "success.main", cursor: "pointer", height: 18 }} />
+                        </Tooltip>
+                    </Stack>
+                    <Stack direction={"row"} spacing={1}>
+                        <Typography variant="button" color="error.main">
+                            Unhealthy LEDs: {unhealthyCount}
+                        </Typography>
+                        <Tooltip
+                            title={
+                                <Box>
+                                    <Typography variant="subtitle1">Unhealthy LEDs:</Typography>
+                                    {renderLedList(leds.filter((led) => led.mode !== led.status))}
+                                </Box>
+                            }
+                            arrow
+                        >
+                            <HelpOutlinedIcon sx={{ color: "error.main", cursor: "pointer", height: 18 }} />
+                        </Tooltip>
+                    </Stack>
                 </Stack>
             </Stack>
 
