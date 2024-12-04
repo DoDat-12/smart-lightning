@@ -15,7 +15,7 @@ const AvailableLeds = ({ groupId }) => {
             onValue(ledsRef, (snapshot) => {
                 const data = snapshot.val();
                 const filteredLeds = Object.keys(data)
-                    .filter((ledId) => data[ledId].group_id === 0 && data[ledId].user === user?.uid) // Only show user's LEDs with group_id = 0
+                    .filter((ledId) => data[ledId].group_id === 0 && data[ledId].user === user?.email) // Only show user's LEDs with group_id = 0
                     .map((ledId) => ({ id: ledId, ...data[ledId] }));
                 setLeds(filteredLeds);
             });

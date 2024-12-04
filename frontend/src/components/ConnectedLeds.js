@@ -75,7 +75,7 @@ const ConnectedLeds = ({ groupId }) => {
                 const filteredLeds = Object.keys(data)
                     .filter((ledId) =>
                         data[ledId].group_id.toString() === groupId &&
-                        data[ledId].user === user?.uid
+                        data[ledId].user === user?.email
                     )
                     .map((ledId) => ({ id: ledId, ...data[ledId] }));
                 setLeds(filteredLeds);
@@ -109,7 +109,7 @@ const ConnectedLeds = ({ groupId }) => {
         ));
     };
 
-    if (leds.length === 0) {
+    if (leds.length === 0 && groupId !== null) {
         return (
             <div>
                 <Stack direction={"row"} spacing={1} alignItems={"center"}>
@@ -131,7 +131,7 @@ const ConnectedLeds = ({ groupId }) => {
                     </DialogTitle>
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
-                            Are you sure you want to delete this group and all of its LEDs? This action cannot be undone.
+                            Are you sure you want to delete this group? This action cannot be undone.
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>
@@ -145,109 +145,111 @@ const ConnectedLeds = ({ groupId }) => {
         );
     }
 
-    return (
-        <Stack spacing={5}>
-            <Stack spacing={2}>
-                <Stack spacing={5} direction={"row"} alignItems={"normal"}>
-                    <Stack direction={"row"} spacing={3} alignItems={"center"}>
-                        <Typography variant="h6">Mode</Typography>
-                        <ToggleButtonGroup value={selectedOption} exclusive onChange={handleChange}>
-                            <ToggleButton value="ON" sx={{ width: 100 }}>
-                                ON
-                            </ToggleButton>
-                            <ToggleButton value="OFF" sx={{ width: 100 }}>
-                                OFF
-                            </ToggleButton>
-                            <ToggleButton value="AUTO" sx={{ width: 100 }}>
-                                AUTO
-                            </ToggleButton>
-                        </ToggleButtonGroup>
+    if (leds.length > 0) {
+        return (
+            <Stack spacing={5}>
+                <Stack spacing={2}>
+                    <Stack spacing={5} direction={"row"} alignItems={"normal"}>
+                        <Stack direction={"row"} spacing={3} alignItems={"center"}>
+                            <Typography variant="h6">Mode</Typography>
+                            <ToggleButtonGroup value={selectedOption} exclusive onChange={handleChange}>
+                                <ToggleButton value="ON" sx={{ width: 100 }}>
+                                    ON
+                                </ToggleButton>
+                                <ToggleButton value="OFF" sx={{ width: 100 }}>
+                                    OFF
+                                </ToggleButton>
+                                <ToggleButton value="AUTO" sx={{ width: 100 }}>
+                                    AUTO
+                                </ToggleButton>
+                            </ToggleButtonGroup>
+                        </Stack>
                     </Stack>
-                </Stack>
-                <Stack direction={"column"} spacing={2}>
-                    <Typography variant='h6'>Intensity threshold: {threshold}</Typography>
-                    <Slider
-                        value={threshold}
-                        onChange={handleSliderChange}
-                        defaultValue={2000}
-                        valueLabelDisplay="auto"
-                        min={0}
-                        max={4000}
-                        step={100}
-                        sx={{ width: 300 }}
-                    />
+                    <Stack direction={"column"} spacing={2}>
+                        <Typography variant='h6'>Intensity threshold: {threshold}</Typography>
+                        <Slider
+                            value={threshold}
+                            onChange={handleSliderChange}
+                            defaultValue={2000}
+                            valueLabelDisplay="auto"
+                            min={0}
+                            max={4000}
+                            step={100}
+                            sx={{ width: 300 }}
+                        />
 
-                </Stack>
-                <Stack direction={"row"} spacing={8}>
-                    <Stack direction={"row"} spacing={1}>
-                        <Typography variant="button" color="success.main">
-                            Healthy LEDs: {healthyCount}
-                        </Typography>
-                        <Tooltip
-                            title={
-                                <Box>
-                                    <Typography variant="subtitle1">Healthy LEDs:</Typography>
-                                    {renderLedList(leds.filter((led) => led.mode === led.status))}
-                                </Box>
-                            }
-                            arrow
-                        >
-                            <HelpOutlinedIcon sx={{ color: "success.main", cursor: "pointer", height: 18 }} />
-                        </Tooltip>
                     </Stack>
-                    <Stack direction={"row"} spacing={1}>
-                        <Typography variant="button" color="error.main">
-                            Unhealthy LEDs: {unhealthyCount}
-                        </Typography>
-                        <Tooltip
-                            title={
-                                <Box>
-                                    <Typography variant="subtitle1">Unhealthy LEDs:</Typography>
-                                    {renderLedList(leds.filter((led) => led.mode !== led.status))}
-                                </Box>
-                            }
-                            arrow
-                        >
-                            <HelpOutlinedIcon sx={{ color: "error.main", cursor: "pointer", height: 18 }} />
-                        </Tooltip>
+                    <Stack direction={"row"} spacing={8}>
+                        <Stack direction={"row"} spacing={1}>
+                            <Typography variant="button" color="success.main">
+                                Healthy LEDs: {healthyCount}
+                            </Typography>
+                            <Tooltip
+                                title={
+                                    <Box>
+                                        <Typography variant="subtitle1">Healthy LEDs:</Typography>
+                                        {renderLedList(leds.filter((led) => led.mode === led.status))}
+                                    </Box>
+                                }
+                                arrow
+                            >
+                                <HelpOutlinedIcon sx={{ color: "success.main", cursor: "pointer", height: 18 }} />
+                            </Tooltip>
+                        </Stack>
+                        <Stack direction={"row"} spacing={1}>
+                            <Typography variant="button" color="error.main">
+                                Unhealthy LEDs: {unhealthyCount}
+                            </Typography>
+                            <Tooltip
+                                title={
+                                    <Box>
+                                        <Typography variant="subtitle1">Unhealthy LEDs:</Typography>
+                                        {renderLedList(leds.filter((led) => led.mode !== led.status))}
+                                    </Box>
+                                }
+                                arrow
+                            >
+                                <HelpOutlinedIcon sx={{ color: "error.main", cursor: "pointer", height: 18 }} />
+                            </Tooltip>
+                        </Stack>
                     </Stack>
                 </Stack>
+
+                <Grid2 container spacing={3} direction={"row"}>
+                    {leds.map((led) => (
+                        <Card key={led.id} variant="elevation" sx={{ height: 190, width: 500, borderRadius: 5 }}>
+                            {/* header */}
+                            <Box sx={{ backgroundColor: "#EB8317", p: 2, color: "#F4F6FF" }}>
+                                <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
+                                    <Stack direction={"row"} alignItems={"center"} spacing={2}>
+                                        <LightbulbIcon />
+                                        <Typography variant="h5" component="div">{led.name}</Typography>
+                                    </Stack>
+                                </Stack>
+                            </Box>
+
+                            <CardContent>
+                                <Stack direction={"row"} justifyContent={"space-between"} alignItems={"end"}>
+                                    <Stack direction={"column"} p={1}>
+                                        <Typography>
+                                            Led ID: {led.id}
+                                        </Typography>
+                                        <Typography>
+                                            Status: {led.status === 0 ? "OFF" : "ON"}
+                                        </Typography>
+                                        <Typography>
+                                            Intensity: {led.intensity}
+                                        </Typography>
+                                    </Stack>
+                                    <Button variant="contained" onClick={() => disconnectLed(led.id)}>DISCONNECT</Button>
+                                </Stack>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </Grid2>
             </Stack>
-
-            <Grid2 container spacing={3} direction={"row"}>
-                {leds.map((led) => (
-                    <Card key={led.id} variant="elevation" sx={{ height: 190, width: 500, borderRadius: 5 }}>
-                        {/* header */}
-                        <Box sx={{ backgroundColor: "#EB8317", p: 2, color: "#F4F6FF" }}>
-                            <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
-                                <Stack direction={"row"} alignItems={"center"} spacing={2}>
-                                    <LightbulbIcon />
-                                    <Typography variant="h5" component="div">{led.name}</Typography>
-                                </Stack>
-                            </Stack>
-                        </Box>
-
-                        <CardContent>
-                            <Stack direction={"row"} justifyContent={"space-between"} alignItems={"end"}>
-                                <Stack direction={"column"} p={1}>
-                                    <Typography>
-                                        Led ID: {led.id}
-                                    </Typography>
-                                    <Typography>
-                                        Status: {led.status === 0 ? "OFF" : "ON"}
-                                    </Typography>
-                                    <Typography>
-                                        Intensity: {led.intensity}
-                                    </Typography>
-                                </Stack>
-                                <Button variant="contained" onClick={() => disconnectLed(led.id)}>DISCONNECT</Button>
-                            </Stack>
-                        </CardContent>
-                    </Card>
-                ))}
-            </Grid2>
-        </Stack>
-    );
+        );
+    }
 };
 
 export default ConnectedLeds;

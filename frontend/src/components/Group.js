@@ -3,8 +3,11 @@ import { Tabs, Tab, IconButton, Dialog, DialogTitle, DialogContent, TextField, D
 import { ref, onValue, set, get } from 'firebase/database';
 import { db } from '../firebaseConfig';
 import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
+import { auth } from '../firebaseConfig';
 
 const Group = ({ onGroupChange }) => {
+    const user = auth.currentUser;
+
     const [groups, setGroups] = useState([]);
     const [value, setValue] = useState(0); // Default to the first group (group_id = 1)
     const [openDialog, setOpenDialog] = useState(false);
@@ -15,20 +18,22 @@ const Group = ({ onGroupChange }) => {
         const groupsRef = ref(db, 'groups');
         onValue(groupsRef, (snapshot) => {
             const data = snapshot.val();
+            // eslint-disable-next-line
+            const filteredGroups = Object.keys(data).filter((key) => data[key].user === user.email);
             // Convert the groups object into an array of [groupId, groupName]
-            const groupArray = Object.keys(data).map((key) => ({
+            const groupArray = filteredGroups.map((key) => ({
                 groupId: key,
                 groupName: data[key].group_name
             }));
             setGroups(groupArray);
 
             // Set the default group to group_id = 1 (if available)
-            const defaultGroupIndex = groupArray.findIndex(group => group.groupId === '1');
-            if (defaultGroupIndex !== -1) {
-                setValue(defaultGroupIndex);
-                onGroupChange(groupArray[defaultGroupIndex].groupId);
-            }
-        });
+            // const defaultGroupIndex = groupArray.findIndex(group => group.groupId === '1');
+            // if (defaultGroupIndex !== -1) {
+            //     setValue(defaultGroupIndex);
+            //     onGroupChange(groupArray[defaultGroupIndex].groupId);
+            // }
+        }); // eslint-disable-next-line
     }, [onGroupChange]);
 
     // Handle tab change
@@ -57,8 +62,10 @@ const Group = ({ onGroupChange }) => {
             // Add the new group to Firebase
             const newGroup = {
                 group_id: newGroupId,
-                group_name: newGroupName
+                group_name: newGroupName, // eslint-disable-next-line
+                user: user.email
             };
+
             set(ref(db, `groups/${newGroupId}`), newGroup)
                 .then(() => {
                     // Close the dialog and reset the input field
