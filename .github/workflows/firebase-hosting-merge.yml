@@ -21,4 +21,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SMART_LIGHTNING_F2539 }}
           channelId: live
           projectId: smart-lightning-f2539
-          target: frontend
+          entryPoint: frontend
