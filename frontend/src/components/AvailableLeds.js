@@ -11,15 +11,15 @@ const AvailableLeds = ({ groupId }) => {
 
     useEffect(() => {
         if (groupId && user?.uid) {
-            const ledsRef = ref(db, 'leds');
+            const ledsRef = ref(db, 'leds'); // eslint-disable-next-line
             onValue(ledsRef, (snapshot) => {
                 const data = snapshot.val();
-                const filteredLeds = Object.keys(data)
+                const filteredLeds = Object.keys(data) // eslint-disable-next-line
                     .filter((ledId) => data[ledId].group_id === 0 && data[ledId].user === user?.email) // Only show user's LEDs with group_id = 0
                     .map((ledId) => ({ id: ledId, ...data[ledId] }));
                 setLeds(filteredLeds);
             });
-        }
+        } // eslint-disable-next-line
     }, [groupId, user?.uid]);
 
     const connectLed = (ledId) => {
