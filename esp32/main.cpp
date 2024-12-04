@@ -90,7 +90,7 @@ void connectToFirebase()
         Firebase.RTDB.setString(&fbdo, "leds/led01/name", "Led 1") &&
         Firebase.RTDB.setInt(&fbdo, "leds/led01/status", 0) &&
         Firebase.RTDB.setInt(&fbdo, "leds/led01/threshold", 2000) &&
-        Firebase.RTDB.setString(&fbdo, "leds/led01/user", "1mn36qZN5mdcByqB04JVgmq3mX72"))
+        Firebase.RTDB.setString(&fbdo, "leds/led01/user", ""))
       Serial.print("Setup device successfully");
     else
       Serial.print(fbdo.errorReason());
